@@ -1,0 +1,55 @@
+services:
+  - type: web
+    name: wordpress-app
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    region: oregon
+    disk:
+      name: wp-content-data
+      mountPath: /var/www/html/wp-content
+      sizeGB: 5
+    envVars:
+      - key: WORDPRESS_DB_HOST
+        fromService:
+          type: pserv
+          name: wordpress-db
+          property: host
+      - key: WORDPRESS_DB_USER
+        value: wordpress
+      - key: WORDPRESS_DB_PASSWORD
+        generateValue: true
+      - key: WORDPRESS_DB_NAME
+        value: wordpress
+      - key: WORDPRESS_CONFIG_EXTRA
+        value: |
+          if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
+              $_SERVER['HTTPS'] = 'on';
+          }
+          if (isset($_SERVER['HTTP_HOST'])) {
+              define('WP_HOME', 'https://' . $_SERVER['HTTP_HOST']);
+              define('WP_SITEURL', 'https://' . $_SERVER['HTTP_HOST']);
+          }
+
+  - type: pserv
+    name: wordpress-db
+    runtime: docker
+    dockerfilePath: ./Dockerfile.db
+    plan: starter
+    region: oregon
+    disk:
+      name: mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 5
+    envVars:
+      - key: MYSQL_DATABASE
+        value: wordpress
+      - key: MYSQL_USER
+        value: wordpress
+      - key: MYSQL_PASSWORD
+        fromService:
+          type: web
+          name: wordpress-app
+          envVarKey: WORDPRESS_DB_PASSWORD
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
