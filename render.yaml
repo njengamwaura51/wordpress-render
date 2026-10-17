@@ -1,7 +1,7 @@
 services:
   - type: web
     name: wordpress-app
-    runtime: docker
+    env: docker
     dockerfilePath: ./Dockerfile
     plan: starter
     region: oregon
@@ -33,7 +33,7 @@ services:
 
   - type: pserv
     name: wordpress-db
-    runtime: docker
+    env: docker
     dockerfilePath: ./Dockerfile.db
     plan: starter
     region: oregon
