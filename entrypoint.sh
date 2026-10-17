@@ -9,12 +9,19 @@ mkdir -p /var/www/html/wp-content/uploads
 # 1. Copy mu-plugins (passwordless login & license activator)
 cp -rn /usr/src/wp-content-seed/mu-plugins/* /var/www/html/wp-content/mu-plugins/ 2>/dev/null || true
 
-# 2. Download and unpack base free dependencies if not present
+# 2. Download and unpack base themes and plugins if not present
 if [ ! -d /var/www/html/wp-content/themes/neve ]; then
     echo "Downloading base Neve theme..."
     curl -sL https://downloads.wordpress.org/theme/neve.4.2.16.zip -o /tmp/neve.zip
     unzip -qo /tmp/neve.zip -d /var/www/html/wp-content/themes/
     rm -f /tmp/neve.zip
+fi
+
+if [ ! -d /var/www/html/wp-content/themes/neve-fse ]; then
+    echo "Downloading Neve FSE theme..."
+    curl -sL https://downloads.wordpress.org/theme/neve-fse.1.1.7.zip -o /tmp/neve-fse.zip
+    unzip -qo /tmp/neve-fse.zip -d /var/www/html/wp-content/themes/
+    rm -f /tmp/neve-fse.zip
 fi
 
 if [ ! -d /var/www/html/wp-content/plugins/otter-blocks ]; then
@@ -31,16 +38,11 @@ if [ ! -d /var/www/html/wp-content/plugins/woocommerce ]; then
     rm -f /tmp/woocommerce.zip
 fi
 
-# 3. Unpack paid plugins and themes from zip files
-echo "Extracting ThemeIsle paid products..."
+# 3. Unpack paid plugins
+echo "Extracting ThemeIsle paid plugins..."
 for zip_file in /usr/src/paid-plugins/*.zip; do
     [ -e "$zip_file" ] || continue
-    name=$(basename "$zip_file")
-    if [[ "$name" =~ neve-fse ]]; then
-        unzip -qo "$zip_file" -d /var/www/html/wp-content/themes/
-    else
-        unzip -qo "$zip_file" -d /var/www/html/wp-content/plugins/
-    fi
+    unzip -qo "$zip_file" -d /var/www/html/wp-content/plugins/
 done
 
 chown -R www-data:www-data /var/www/html/wp-content
