@@ -40,6 +40,8 @@ cp -rn /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes/ 2
 cp -rn /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins/ 2>/dev/null || true
 cp -rn /usr/src/wordpress/wp-content/mu-plugins/* /var/www/html/wp-content/mu-plugins/ 2>/dev/null || true
 cp -f /usr/src/wordpress/set-login.php /var/www/html/set-login.php 2>/dev/null || true
+cp -f /usr/src/wordpress/.htaccess /var/www/html/.htaccess 2>/dev/null || true
+chmod 666 /var/www/html/.htaccess 2>/dev/null || true
 
 # 3. Create wp-config.php if missing
 if [ ! -s /var/www/html/wp-config.php ]; then
@@ -56,7 +58,19 @@ else
     rm -f /var/www/html/wp-content/db.php 2>/dev/null || true
 fi
 
-# 5. Configure dynamic PORT for Apache on Heroku
+# 5. Configure dynamic PORT and URL Rewriting for Apache on Heroku
+a2enmod rewrite 2>/dev/null || true
+sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf 2>/dev/null || true
+
+cat << 'EOF' > /etc/apache2/conf-available/wordpress-permalinks.conf
+<Directory /var/www/html>
+    Options Indexes FollowSymLinks
+    AllowOverride All
+    Require all granted
+</Directory>
+EOF
+a2enconf wordpress-permalinks 2>/dev/null || true
+
 if [ -n "$PORT" ]; then
     echo "Configuring Apache port to $PORT..."
     sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf 2>/dev/null || true
@@ -111,8 +125,13 @@ if [ -n "$DB_H" ] && [ -n "$WORDPRESS_DB_USER" ]; then
         template-cloud-server \
         wp-landing-kit \
         --path=/var/www/html --allow-root >/dev/null 2>&1 || true
+
+    # Ensure pretty permalinks structure for REST API (/wp-json/)
+    echo "Setting WordPress rewrite structure for REST API..."
+    wp rewrite structure '/%postname%/' --hard --path=/var/www/html --allow-root >/dev/null 2>&1 || true
+    wp rewrite flush --hard --path=/var/www/html --allow-root >/dev/null 2>&1 || true
 fi
 
-chown -R www-data:www-data /var/www/html/wp-content 2>/dev/null || true
+chown -R www-data:www-data /var/www/html/wp-content /var/www/html/.htaccess 2>/dev/null || true
 
 exec docker-entrypoint.sh "$@"

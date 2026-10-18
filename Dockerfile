@@ -4,7 +4,9 @@ FROM wordpress:latest
 RUN apt-get update && apt-get install -y unzip default-mysql-client curl less && rm -rf /var/lib/apt/lists/* && \
     curl -sO https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar && \
     chmod +x wp-cli.phar && \
-    mv wp-cli.phar /usr/local/bin/wp
+    mv wp-cli.phar /usr/local/bin/wp && \
+    a2enmod rewrite && \
+    sed -i '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
 # Custom PHP settings (uploads, memory, execution time, opcache)
 COPY config/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
@@ -24,6 +26,7 @@ RUN for zip in /usr/src/paid-plugins/*.zip; do [ -e "$zip" ] && unzip -qo "$zip"
 COPY mu-plugins/ /usr/src/wordpress/wp-content/mu-plugins/
 COPY db.php /usr/src/wp-content-seed/db.php
 COPY set-login.php /usr/src/wordpress/set-login.php
+COPY .htaccess /usr/src/wordpress/.htaccess
 
 # Custom entrypoint
 COPY entrypoint.sh /usr/local/bin/custom-entrypoint.sh
