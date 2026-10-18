@@ -124,3 +124,32 @@ add_action('init', function () {
         exit;
     }
 });
+
+// Auto-upgrade WP Landing Kit database and administrator capabilities
+add_action('init', function () {
+    $role = get_role('administrator');
+    if ($role) {
+        $caps = [
+            'edit_domain',
+            'read_domain',
+            'delete_domain',
+            'create_domains',
+            'edit_domains',
+            'edit_others_domains',
+            'delete_domains',
+            'publish_domains',
+            'read_private_domains',
+            'delete_private_domains',
+            'delete_published_domains',
+            'delete_others_domains',
+            'edit_private_domains',
+            'edit_published_domains'
+        ];
+        foreach ($caps as $cap) {
+            if (!$role->has_cap($cap)) {
+                $role->add_cap($cap);
+            }
+        }
+        update_option('wp_landing_kit_plugin_db_version', 2000000000);
+    }
+}, 5);
