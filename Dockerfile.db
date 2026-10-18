@@ -1,4 +1,0 @@
-FROM mariadb:10.11
-
-# Automatically initialize database with pre-configured WordPress data
-COPY init.sql.gz /docker-entrypoint-initdb.d/init.sql.gz

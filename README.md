@@ -1,20 +1,20 @@
-# WordPress on Render with ThemeIsle Pro Suite
+# WordPress on Render (Free Plan + External TiDB Cloud Database)
 
-Pre-configured, production-ready WordPress deployment designed specifically for **Render** using Docker, Persistent Disks, and MariaDB.
+Pre-configured, production-ready WordPress deployment designed for **Render Free Tier** (Zero Credit Card Required) with **TiDB Cloud Serverless MySQL**.
 
 ---
 
-## 🚀 1-Click Deploy to Render
+## 🚀 1-Click Deploy to Render (No Card Required)
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/njengamwaura51/wordpress-render)
 
 Click the button above or visit:
 **[https://render.com/deploy?repo=https://github.com/njengamwaura51/wordpress-render](https://render.com/deploy?repo=https://github.com/njengamwaura51/wordpress-render)**
 
-Render will automatically parse `render.yaml` and provision:
-1. **`wordpress-app` (Web Service)**: High-performance PHP/Apache WordPress container with reverse-proxy SSL & dynamic site URL handling.
-2. **`wordpress-db` (Private Service)**: Secure MariaDB database pre-populated with your initial database dump.
-3. **Persistent Disks**: Mounted to `/var/www/html/wp-content` and `/var/lib/mysql` so your uploads, products, posts, and database persist permanently across all redeploys.
+Render will automatically deploy:
+* **`wordpress-app` (Web Service)** on the **Free Plan** (`plan: free`) with **no credit card needed**.
+* Connected to your cloud-hosted **TiDB Serverless Database**.
+* Automatic SSL/TLS encryption for database and web traffic.
 
 ---
 
@@ -38,6 +38,6 @@ Render will automatically parse `render.yaml` and provision:
 2. Go to **Settings** → **Custom Domains** → **Add Custom Domain**.
 3. Enter your domain (e.g. `yourdomain.com` or `shop.yourdomain.com`).
 4. Point your DNS records at your domain registrar:
-   * **Subdomain (`shop.yourdomain.com`):** Add a `CNAME` pointing to your Render service address (e.g., `wordpress-app-xxxx.onrender.com`).
+   * **Subdomain (`shop.yourdomain.com`):** Add a `CNAME` pointing to your Render address (e.g., `wordpress-app-xxxx.onrender.com`).
    * **Root domain (`yourdomain.com`):** Add an `A` record pointing to `216.24.57.1` (or `ANAME`/`ALIAS`).
 5. Render will automatically issue a free SSL certificate (HTTPS), and your ThemeIsle license activation will work seamlessly.
