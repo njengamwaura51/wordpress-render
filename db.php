@@ -29,5 +29,7 @@ class wpdb_tidb extends wpdb {
 }
 
 if (!isset($wpdb)) {
-    $wpdb = new wpdb_tidb(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
+    if (defined('DB_USER') && defined('DB_PASSWORD') && defined('DB_NAME') && defined('DB_HOST')) {
+        $wpdb = new wpdb_tidb(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
+    }
 }

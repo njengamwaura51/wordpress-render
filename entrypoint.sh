@@ -12,6 +12,11 @@ if [ ! -e /var/www/html/index.php ]; then
     cp -rn /usr/src/wordpress/* /var/www/html/ 2>/dev/null || true
 fi
 
+if [ ! -s /var/www/html/wp-config.php ]; then
+    echo "Creating wp-config.php from wp-config-docker.php..."
+    cp -f /usr/src/wordpress/wp-config-docker.php /var/www/html/wp-config.php 2>/dev/null || cp -f /var/www/html/wp-config-docker.php /var/www/html/wp-config.php 2>/dev/null || true
+fi
+
 mkdir -p /var/www/html/wp-content/plugins
 mkdir -p /var/www/html/wp-content/themes
 mkdir -p /var/www/html/wp-content/mu-plugins
