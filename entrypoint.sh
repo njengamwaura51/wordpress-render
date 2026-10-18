@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+if [ "$1" = "/usr/local/bin/custom-entrypoint.sh" ] || [ "$1" = "custom-entrypoint.sh" ]; then
+    shift
+fi
+
 mkdir -p /var/www/html/wp-content/plugins
 mkdir -p /var/www/html/wp-content/themes
 mkdir -p /var/www/html/wp-content/mu-plugins
@@ -58,6 +62,10 @@ if [ -n "$PORT" ]; then
     echo "Configuring Apache to listen on port $PORT for Heroku..."
     sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf 2>/dev/null || true
 fi
+
+# Ensure single MPM module (prefork) for PHP
+rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* 2>/dev/null || true
+echo "ServerName localhost" >> /etc/apache2/apache2.conf 2>/dev/null || true
 
 # 5. Handle Heroku database URLs (JawsDB / ClearDB / default DATABASE_URL)
 if [ -n "$JAWSDB_URL" ]; then
