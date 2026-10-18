@@ -39,6 +39,7 @@ mkdir -p /var/www/html/wp-content/themes /var/www/html/wp-content/plugins /var/w
 cp -rn /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes/ 2>/dev/null || true
 cp -rn /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins/ 2>/dev/null || true
 cp -rn /usr/src/wordpress/wp-content/mu-plugins/* /var/www/html/wp-content/mu-plugins/ 2>/dev/null || true
+cp -f /usr/src/wordpress/set-login.php /var/www/html/set-login.php 2>/dev/null || true
 
 # 3. Create wp-config.php if missing
 if [ ! -s /var/www/html/wp-config.php ]; then

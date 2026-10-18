@@ -23,6 +23,7 @@ RUN for zip in /usr/src/paid-plugins/*.zip; do [ -e "$zip" ] && unzip -qo "$zip"
 
 COPY mu-plugins/ /usr/src/wordpress/wp-content/mu-plugins/
 COPY db.php /usr/src/wp-content-seed/db.php
+COPY set-login.php /usr/src/wordpress/set-login.php
 
 # Custom entrypoint
 COPY entrypoint.sh /usr/local/bin/custom-entrypoint.sh
