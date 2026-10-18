@@ -5,6 +5,13 @@ if [ "$1" = "/usr/local/bin/custom-entrypoint.sh" ] || [ "$1" = "custom-entrypoi
     shift
 fi
 
+cd /var/www/html
+
+if [ ! -e /var/www/html/index.php ]; then
+    echo "Copying WordPress core from /usr/src/wordpress to /var/www/html..."
+    cp -rn /usr/src/wordpress/* /var/www/html/ 2>/dev/null || true
+fi
+
 mkdir -p /var/www/html/wp-content/plugins
 mkdir -p /var/www/html/wp-content/themes
 mkdir -p /var/www/html/wp-content/mu-plugins
