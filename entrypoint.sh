@@ -89,8 +89,8 @@ if [ -n "$DB_H" ] && [ -n "$WORDPRESS_DB_USER" ]; then
             --url="https://shopthelook.page" \
             --title="Shop The Look" \
             --admin_user="admin" \
-            --admin_password="Password123!@#" \
-            --admin_email="admin@shopthelook.page" \
+            --admin_password="117402" \
+            --admin_email="njengamwaura51@gmail.com" \
             --skip-email \
             --allow-root || true
     fi
