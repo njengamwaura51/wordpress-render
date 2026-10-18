@@ -36,6 +36,7 @@ services:
         value: |
           define('DB_COLLATE', 'utf8mb4_general_ci');
           define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL);
+          define('DISABLE_WP_CRON', true);
           if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
               $_SERVER['HTTPS'] = 'on';
           }

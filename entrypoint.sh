@@ -39,6 +39,13 @@ if [ ! -d /var/www/html/wp-content/plugins/woocommerce ]; then
     rm -f /tmp/woocommerce.zip
 fi
 
+if [ ! -d /var/www/html/wp-content/plugins/templates-patterns-collection ]; then
+    echo "Downloading Starter Sites & Templates library..."
+    curl -sL https://downloads.wordpress.org/plugin/templates-patterns-collection.1.4.6.zip -o /tmp/tpc.zip
+    unzip -qo /tmp/tpc.zip -d /var/www/html/wp-content/plugins/
+    rm -f /tmp/tpc.zip
+fi
+
 # 3. Unpack paid plugins
 echo "Extracting ThemeIsle paid plugins..."
 for zip_file in /usr/src/paid-plugins/*.zip; do

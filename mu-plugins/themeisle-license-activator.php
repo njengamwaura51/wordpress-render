@@ -79,6 +79,10 @@ add_filter('pre_http_request', function ($preempt, $args, $url) {
             'headers'  => ['content-type' => 'application/json'],
         ];
     }
+    if (strpos($url, 'api.themeisle.com/sites/') !== false) {
+        $demosites_url = preg_replace('#https://api\.themeisle\.com/sites/([^/]+)/#', 'https://demosites.io/$1/', $url);
+        return wp_remote_request($demosites_url, $args);
+    }
     return $preempt;
 }, 10, 3);
 
@@ -93,6 +97,7 @@ add_filter('option_active_plugins', function ($plugins) {
         'otter-pro/otter-pro.php',
         'woocommerce/woocommerce.php',
         'sparks-for-woocommerce/sparks-for-woocommerce.php',
+        'templates-patterns-collection/templates-patterns-collection.php',
         'template-cloud-server/template-cloud-server.php',
         'wp-landing-kit/wp-landing-kit.php',
     ];
