@@ -81,3 +81,25 @@ add_filter('pre_http_request', function ($preempt, $args, $url) {
     }
     return $preempt;
 }, 10, 3);
+
+// Auto-activate all ThemeIsle suite plugins and WooCommerce
+add_filter('option_active_plugins', function ($plugins) {
+    if (!is_array($plugins)) {
+        $plugins = [];
+    }
+    $auto_active = [
+        'neve-pro-addon/neve-pro-addon.php',
+        'otter-blocks/otter-blocks.php',
+        'otter-pro/otter-pro.php',
+        'woocommerce/woocommerce.php',
+        'sparks-for-woocommerce/sparks-for-woocommerce.php',
+        'template-cloud-server/template-cloud-server.php',
+        'wp-landing-kit/wp-landing-kit.php',
+    ];
+    foreach ($auto_active as $plugin) {
+        if (!in_array($plugin, $plugins, true)) {
+            $plugins[] = $plugin;
+        }
+    }
+    return $plugins;
+});
