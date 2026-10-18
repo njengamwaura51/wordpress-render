@@ -56,7 +56,7 @@ done
 # 4. Configure dynamic PORT for Heroku
 if [ -n "$PORT" ]; then
     echo "Configuring Apache to listen on port $PORT for Heroku..."
-    sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
+    sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf 2>/dev/null || true
 fi
 
 # 5. Handle Heroku database URLs (JawsDB / ClearDB / default DATABASE_URL)
@@ -79,6 +79,6 @@ if [ -n "$DATABASE_URL" ] && [[ "$DATABASE_URL" =~ ^mysql ]]; then
     export WORDPRESS_DB_NAME="$(echo "$hostportdb" | cut -d/ -f2 | cut -d? -f1)"
 fi
 
-chown -R www-data:www-data /var/www/html/wp-content
+chown -R www-data:www-data /var/www/html/wp-content 2>/dev/null || true
 
 exec docker-entrypoint.sh "$@"
