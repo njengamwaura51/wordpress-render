@@ -7,80 +7,10 @@ fi
 
 cd /var/www/html
 
-if [ ! -e /var/www/html/index.php ]; then
-    echo "Copying WordPress core from /usr/src/wordpress to /var/www/html..."
-    cp -rn /usr/src/wordpress/* /var/www/html/ 2>/dev/null || true
-fi
-
-if [ ! -s /var/www/html/wp-config.php ]; then
-    echo "Creating wp-config.php from wp-config-docker.php..."
-    cp -f /usr/src/wordpress/wp-config-docker.php /var/www/html/wp-config.php 2>/dev/null || cp -f /var/www/html/wp-config-docker.php /var/www/html/wp-config.php 2>/dev/null || true
-fi
-
-mkdir -p /var/www/html/wp-content/plugins
-mkdir -p /var/www/html/wp-content/themes
-mkdir -p /var/www/html/wp-content/mu-plugins
-mkdir -p /var/www/html/wp-content/uploads
-
-# 1. Copy mu-plugins and db drop-in (passwordless login & TiDB collation fix)
-cp -rn /usr/src/wp-content-seed/mu-plugins/* /var/www/html/wp-content/mu-plugins/ 2>/dev/null || true
-cp -f /usr/src/wp-content-seed/db.php /var/www/html/wp-content/db.php 2>/dev/null || true
-
-# 2. Download and unpack base themes and plugins if not present
-if [ ! -d /var/www/html/wp-content/themes/neve ]; then
-    echo "Downloading base Neve theme..."
-    curl -sL https://downloads.wordpress.org/theme/neve.4.2.16.zip -o /tmp/neve.zip
-    unzip -qo /tmp/neve.zip -d /var/www/html/wp-content/themes/
-    rm -f /tmp/neve.zip
-fi
-
-if [ ! -d /var/www/html/wp-content/themes/neve-fse ]; then
-    echo "Downloading Neve FSE theme..."
-    curl -sL https://downloads.wordpress.org/theme/neve-fse.1.1.7.zip -o /tmp/neve-fse.zip
-    unzip -qo /tmp/neve-fse.zip -d /var/www/html/wp-content/themes/
-    rm -f /tmp/neve-fse.zip
-fi
-
-if [ ! -d /var/www/html/wp-content/plugins/otter-blocks ]; then
-    echo "Downloading base Otter Blocks..."
-    curl -sL https://downloads.wordpress.org/plugin/otter-blocks.3.2.7.zip -o /tmp/otter-blocks.zip
-    unzip -qo /tmp/otter-blocks.zip -d /var/www/html/wp-content/plugins/
-    rm -f /tmp/otter-blocks.zip
-fi
-
-if [ ! -d /var/www/html/wp-content/plugins/woocommerce ]; then
-    echo "Downloading base WooCommerce..."
-    curl -sL https://downloads.wordpress.org/plugin/woocommerce.11.2.1.zip -o /tmp/woocommerce.zip
-    unzip -qo /tmp/woocommerce.zip -d /var/www/html/wp-content/plugins/
-    rm -f /tmp/woocommerce.zip
-fi
-
-if [ ! -d /var/www/html/wp-content/plugins/templates-patterns-collection ]; then
-    echo "Downloading Starter Sites & Templates library..."
-    curl -sL https://downloads.wordpress.org/plugin/templates-patterns-collection.1.4.6.zip -o /tmp/tpc.zip
-    unzip -qo /tmp/tpc.zip -d /var/www/html/wp-content/plugins/
-    rm -f /tmp/tpc.zip
-fi
-
-# 3. Unpack paid plugins
-echo "Extracting ThemeIsle paid plugins..."
-for zip_file in /usr/src/paid-plugins/*.zip; do
-    [ -e "$zip_file" ] || continue
-    unzip -qo "$zip_file" -d /var/www/html/wp-content/plugins/
-done
-
-# 4. Configure dynamic PORT for Heroku
-if [ -n "$PORT" ]; then
-    echo "Configuring Apache to listen on port $PORT for Heroku..."
-    sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf 2>/dev/null || true
-fi
-
-# Ensure single MPM module (prefork) for PHP
-rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* 2>/dev/null || true
-echo "ServerName localhost" >> /etc/apache2/apache2.conf 2>/dev/null || true
-
-# 5. Handle Heroku database URLs (JawsDB / ClearDB / default DATABASE_URL)
-if [ -n "$JAWSDB_URL" ]; then
+# 1. Parse Heroku database URLs (JAWSDB_MARIA_URL takes priority)
+if [ -n "$JAWSDB_MARIA_URL" ]; then
+    DATABASE_URL="$JAWSDB_MARIA_URL"
+elif [ -n "$JAWSDB_URL" ]; then
     DATABASE_URL="$JAWSDB_URL"
 elif [ -n "$CLEARDB_DATABASE_URL" ]; then
     DATABASE_URL="$CLEARDB_DATABASE_URL"
@@ -97,6 +27,89 @@ if [ -n "$DATABASE_URL" ] && [[ "$DATABASE_URL" =~ ^mysql ]]; then
     hostport="$(echo "$hostportdb" | cut -d/ -f1)"
     export WORDPRESS_DB_HOST="$hostport"
     export WORDPRESS_DB_NAME="$(echo "$hostportdb" | cut -d/ -f2 | cut -d? -f1)"
+fi
+
+# 2. Seed WordPress core and pre-baked files if not in /var/www/html
+if [ ! -e /var/www/html/index.php ]; then
+    echo "Populating WordPress core to /var/www/html..."
+    cp -rn /usr/src/wordpress/* /var/www/html/ 2>/dev/null || true
+fi
+
+mkdir -p /var/www/html/wp-content/themes /var/www/html/wp-content/plugins /var/www/html/wp-content/mu-plugins /var/www/html/wp-content/uploads 2>/dev/null || true
+cp -rn /usr/src/wordpress/wp-content/themes/* /var/www/html/wp-content/themes/ 2>/dev/null || true
+cp -rn /usr/src/wordpress/wp-content/plugins/* /var/www/html/wp-content/plugins/ 2>/dev/null || true
+cp -rn /usr/src/wordpress/wp-content/mu-plugins/* /var/www/html/wp-content/mu-plugins/ 2>/dev/null || true
+
+# 3. Create wp-config.php if missing
+if [ ! -s /var/www/html/wp-config.php ]; then
+    echo "Generating wp-config.php from template..."
+    cp -f /usr/src/wordpress/wp-config-docker.php /var/www/html/wp-config.php 2>/dev/null || cp -f /var/www/html/wp-config-docker.php /var/www/html/wp-config.php 2>/dev/null || true
+fi
+
+# 4. Handle TiDB collation drop-in vs Native MariaDB
+if [[ "$WORDPRESS_DB_HOST" == *"tidb"* ]]; then
+    echo "TiDB detected, activating TiDB compatibility drop-in..."
+    cp -f /usr/src/wp-content-seed/db.php /var/www/html/wp-content/db.php 2>/dev/null || true
+else
+    echo "Native MariaDB/MySQL detected, removing TiDB drop-in..."
+    rm -f /var/www/html/wp-content/db.php 2>/dev/null || true
+fi
+
+# 5. Configure dynamic PORT for Apache on Heroku
+if [ -n "$PORT" ]; then
+    echo "Configuring Apache port to $PORT..."
+    sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf 2>/dev/null || true
+fi
+
+# Ensure prefork MPM
+rm -f /etc/apache2/mods-enabled/mpm_event.* /etc/apache2/mods-enabled/mpm_worker.* 2>/dev/null || true
+echo "ServerName localhost" >> /etc/apache2/apache2.conf 2>/dev/null || true
+
+# 6. Database readiness check and fresh setup
+DB_H="$(echo "$WORDPRESS_DB_HOST" | cut -d: -f1)"
+DB_P="$(echo "$WORDPRESS_DB_HOST" | cut -s -d: -f2)"
+[ -z "$DB_P" ] && DB_P=3306
+
+if [ -n "$DB_H" ] && [ -n "$WORDPRESS_DB_USER" ]; then
+    echo "Connecting to database at $DB_H:$DB_P..."
+    for i in {1..15}; do
+        if mysql -h"$DB_H" -P"$DB_P" -u"$WORDPRESS_DB_USER" -p"$WORDPRESS_DB_PASSWORD" -e "SELECT 1;" >/dev/null 2>&1; then
+            echo "Database connected successfully!"
+            break
+        fi
+        sleep 1
+    done
+
+    # If WordPress is not installed, install fresh core
+    if ! wp core is-installed --path=/var/www/html --allow-root >/dev/null 2>&1; then
+        echo "Installing fresh WordPress core..."
+        wp core install \
+            --path=/var/www/html \
+            --url="https://shopthelook.page" \
+            --title="Shop The Look" \
+            --admin_user="admin" \
+            --admin_password="Password123!@#" \
+            --admin_email="admin@shopthelook.page" \
+            --skip-email \
+            --allow-root || true
+    fi
+
+    # Set Neve as the active theme
+    echo "Activating Neve theme..."
+    wp theme activate neve --path=/var/www/html --allow-root >/dev/null 2>&1 || true
+
+    # Activate all ThemeIsle Pro plugins and WooCommerce
+    echo "Activating all suite plugins..."
+    wp plugin activate \
+        neve-pro-addon \
+        otter-blocks \
+        otter-pro \
+        woocommerce \
+        sparks-for-woocommerce \
+        templates-patterns-collection \
+        template-cloud-server \
+        wp-landing-kit \
+        --path=/var/www/html --allow-root >/dev/null 2>&1 || true
 fi
 
 chown -R www-data:www-data /var/www/html/wp-content 2>/dev/null || true
