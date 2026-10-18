@@ -14,8 +14,11 @@ services:
         value: FQnz0RETpYQC76K1
       - key: WORDPRESS_DB_NAME
         value: test
+      - key: WORDPRESS_DB_COLLATE
+        value: utf8mb4_general_ci
       - key: WORDPRESS_CONFIG_EXTRA
         value: |
+          define('DB_COLLATE', 'utf8mb4_general_ci');
           define('MYSQL_CLIENT_FLAGS', MYSQLI_CLIENT_SSL);
           if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
               $_SERVER['HTTPS'] = 'on';

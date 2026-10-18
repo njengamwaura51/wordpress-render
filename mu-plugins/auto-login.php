@@ -10,6 +10,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+if (defined('WP_INSTALLING') && WP_INSTALLING) {
+    return;
+}
+
 // 1. Override pluggable auth_redirect: Never redirect to login, auto-authenticate
 if (!function_exists('auth_redirect')) {
     function auth_redirect() {

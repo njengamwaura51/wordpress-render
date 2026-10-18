@@ -6,9 +6,10 @@ RUN apt-get update && apt-get install -y unzip default-mysql-client curl && rm -
 # Custom PHP settings
 COPY config/uploads.ini /usr/local/etc/php/conf.d/uploads.ini
 
-# Paid product zips and mu-plugins
+# Paid product zips, mu-plugins, and db drop-in
 COPY paid-plugins/ /usr/src/paid-plugins/
 COPY mu-plugins/ /usr/src/wp-content-seed/mu-plugins/
+COPY db.php /usr/src/wp-content-seed/db.php
 
 # Custom entrypoint
 COPY entrypoint.sh /usr/local/bin/custom-entrypoint.sh

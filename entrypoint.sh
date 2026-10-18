@@ -6,8 +6,9 @@ mkdir -p /var/www/html/wp-content/themes
 mkdir -p /var/www/html/wp-content/mu-plugins
 mkdir -p /var/www/html/wp-content/uploads
 
-# 1. Copy mu-plugins (passwordless login & license activator)
+# 1. Copy mu-plugins and db drop-in (passwordless login & TiDB collation fix)
 cp -rn /usr/src/wp-content-seed/mu-plugins/* /var/www/html/wp-content/mu-plugins/ 2>/dev/null || true
+cp -f /usr/src/wp-content-seed/db.php /var/www/html/wp-content/db.php 2>/dev/null || true
 
 # 2. Download and unpack base themes and plugins if not present
 if [ ! -d /var/www/html/wp-content/themes/neve ]; then
